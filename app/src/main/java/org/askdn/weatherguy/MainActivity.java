@@ -53,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if(v.getId() == R.id.fab)
         {
-            ForecastFragment.FetchDataFromNetwork weatherTask = new ForecastFragment.FetchDataFromNetwork();
+            ForecastFragment forecast = new ForecastFragment();
+            ForecastFragment.FetchDataFromNetwork weatherTask = forecast.new FetchDataFromNetwork();
             weatherTask.execute("94043");
             Snackbar.make(v, "Refershing", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
