@@ -2,6 +2,7 @@ package org.askdn.weatherguy;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -33,8 +34,16 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
 
 
-    private ArrayAdapter<String> mForecastAdapter;
+    public ArrayAdapter<String> mForecastAdapter;
     public ForecastFragment() {
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        FetchDataFromNetwork fetchDataFromNetwork = new FetchDataFromNetwork();
+        fetchDataFromNetwork.execute("55555");
+
     }
 
     @Override
@@ -48,7 +57,6 @@ public class ForecastFragment extends Fragment {
                 "Sunday - Chennai - 96/45",
                 "Monday - Chennai - 69/56"
         };
-
         List<String> forecastList = new ArrayList<>(
                 Arrays.asList(forecast_Array));
 
@@ -124,9 +132,7 @@ public class ForecastFragment extends Fragment {
                 String weatherForecast = maxMinTemp +" - " + weatherConditions;
                 resultStrs[i]=weatherForecast;
             }
-            for (String s : resultStrs) {
-                Log.v(LOG_TAG, "Forecast entry: " + s);
-            }
+
             return resultStrs;
 
         }
@@ -179,8 +185,6 @@ public class ForecastFragment extends Fragment {
                 if(buffer.length()==0) return null; // stream was empty
                 inputStringJson = buffer.toString();
 
-                Log.i("EK",inputStringJson);
-
             } catch (IOException e) {
                 Log.e(LOG_TAG,"Error", e);
 
@@ -211,7 +215,13 @@ public class ForecastFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String[] strings) {
-            super.onPostExecute(strings);
+            if (strings != null) {
+                mForecastAdapter.clear();
+                for(String dayForecastStr : strings) {
+                    mForecastAdapter.add(dayForecastStr);
+                }
+                // New data is back from the server.  Hooray!
+            }
 
 
 
