@@ -1,16 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="org.askdn.weatherguy.DetailActivity">
+    tools:context="org.askdn.weatherguy.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/forecast_action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
-        android:id="@+id/refresh"
+        android:id="@+id/forecast_refresh"
         android:title="Refresh"
-        android:icon="@android:drawable/ic_popup_sync"
+        android:icon="@drawable/ic_sync_white_24dp"
         app:showAsAction="always"
         ></item>
 </menu>

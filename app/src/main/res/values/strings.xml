@@ -12,8 +12,8 @@
     <string name="pref_unittype" >Select your unit type</string>
 
     <string-array name="pref_unittypeentries">
-        <item name="pref_metrics">pref_metrics</item>
-        <item name="pref_standard">pref_standard</item>
+        <item name="pref_metrics">Metrics</item>
+        <item name="pref_standard">Standard</item>
     </string-array>
     <string-array name="pref_unitentryValues">
         <item name="pref_metricValues">Metrics</item>

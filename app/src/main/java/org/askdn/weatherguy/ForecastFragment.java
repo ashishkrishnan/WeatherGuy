@@ -1,14 +1,19 @@
 package org.askdn.weatherguy;
 
+import android.accounts.NetworkErrorException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -24,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -36,30 +42,48 @@ import java.util.List;
  */
 public class ForecastFragment extends Fragment {
 
-    static int count = 0;
+    View rootView;
     public final String CLASS_ID = "ForecastFragment";
     public ArrayAdapter<String> mForecastAdapter;
     public ForecastFragment() {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Add this line in order for this fragment to handle menu events.
+        setHasOptionsMenu(true);
+    }
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_forecast, menu);
+    }
 
-        if(count==0) {
-            FetchDataFromNetwork fetchDataFromNetwork = new FetchDataFromNetwork();
-            fetchDataFromNetwork.execute("55555");
-            count++;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.forecast_refresh) {
+            Snackbar.make(rootView, "Updating the weather data", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            FetchDataFromNetwork weatherTask = new FetchDataFromNetwork();
+            weatherTask.execute();
+            return true;
         }
-        else
-            count =0;
-
+        if (id == R.id.forecast_action_settings) {
+            Intent settings = new Intent(getActivity(),SettingsActivity.class);
+            startActivity(settings);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        rootView = inflater.inflate(R.layout.fragment_main, container, false);
         String forecast_Array[] = {
                 "Today - Chennai - 78/86",
                 "Tomorrow - Chennai - 68/78",
@@ -67,6 +91,7 @@ public class ForecastFragment extends Fragment {
                 "Sunday - Chennai - 96/45",
                 "Monday - Chennai - 69/56"
         };
+
         List<String> forecastList = new ArrayList<>(
                 Arrays.asList(forecast_Array));
 
@@ -208,6 +233,7 @@ public class ForecastFragment extends Fragment {
                 Log.e(LOG_TAG,"Error", e);
 
             }
+
             finally {
                 if(urlConnection!=null) {
                     urlConnection.disconnect();
