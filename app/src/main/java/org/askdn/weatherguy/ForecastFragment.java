@@ -1,5 +1,6 @@
 package org.askdn.weatherguy;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
@@ -10,8 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,7 +36,8 @@ import java.util.List;
  */
 public class ForecastFragment extends Fragment {
 
-
+    static int count = 0;
+    public final String CLASS_ID = "ForecastFragment";
     public ArrayAdapter<String> mForecastAdapter;
     public ForecastFragment() {
     }
@@ -41,8 +45,14 @@ public class ForecastFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        FetchDataFromNetwork fetchDataFromNetwork = new FetchDataFromNetwork();
-        fetchDataFromNetwork.execute("55555");
+
+        if(count==0) {
+            FetchDataFromNetwork fetchDataFromNetwork = new FetchDataFromNetwork();
+            fetchDataFromNetwork.execute("55555");
+            count++;
+        }
+        else
+            count =0;
 
     }
 
@@ -67,6 +77,15 @@ public class ForecastFragment extends Fragment {
 
         ListView displayList = (ListView) rootView.findViewById(R.id.listview_forecast);
         displayList.setAdapter(mForecastAdapter);
+
+        displayList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent launchDetail = new Intent(getActivity(),DetailActivity.class);
+                launchDetail.putExtra(CLASS_ID,mForecastAdapter.getItem(position));
+                startActivity(launchDetail);
+            }
+        });
         return rootView;
     }
 
