@@ -19,4 +19,14 @@
         android:entryValues="@array/pref_unitentryValues"
         android:defaultValue="@string/pref_unitdefault"
         ></ListPreference>
+
+    <EditTextPreference
+        android:key="@string/pref_numberdays_key"
+        android:title="@string/pref_numberdaystitle"
+        android:defaultValue="@string/pref_numberdaysdefault"
+        android:inputType="text"
+        android:singleLine="true">
+
+    </EditTextPreference>
+
 </PreferenceScreen>

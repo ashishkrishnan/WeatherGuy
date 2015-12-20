@@ -7,18 +7,21 @@
 
     <!--Preference Strings related to Settings -->
     <string name="pref_location_key" translatable="false">location</string>
-    <string name="pref_locationtitle">Set your location</string>
+    <string name="pref_locationtitle">Location</string>
     <string name="pref_units_key" translatable="false">units</string>
-    <string name="pref_unittype" >Select your unit type</string>
+    <string name="pref_unittype" >Temperature Units</string>
+    <string name="pref_numberdays_key">numdays</string>
+    <string name="pref_numberdaystitle">Number of days</string>
 
     <string-array name="pref_unittypeentries">
-        <item name="pref_metrics">Metrics</item>
-        <item name="pref_standard">Standard</item>
+        <item name="pref_metrics">Metric</item>
+        <item name="pref_standard">Imperial</item>
     </string-array>
     <string-array name="pref_unitentryValues">
-        <item name="pref_metricValues">Metrics</item>
-        <item name="pref_standardValues">Standard</item>
+        <item name="pref_metricValues">Metric</item>
+        <item name="pref_standardValues">Imperial</item>
     </string-array>
-    <string name="pref_unitdefault">Metrics</string>
+    <string name="pref_unitdefault">Metric</string>
     <string name="pref_locationdefault" translatable="false">1264527</string>
+    <string name="pref_numberdaysdefault" translatable="false">7</string>
 </resources>

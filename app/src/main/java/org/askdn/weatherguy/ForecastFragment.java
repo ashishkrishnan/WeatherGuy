@@ -45,7 +45,6 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
 
     View rootView;
-    public String mUserLocation=null;
     public final String CLASS_ID = "ForecastFragment";
     public ArrayAdapter<String> mForecastAdapter;
     public ForecastFragment() {
@@ -85,21 +84,11 @@ public class ForecastFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        String forecast_Array[] = {
-                "Today - Chennai - 78/86",
-                "Tomorrow - Chennai - 68/78",
-                "Saturday - Chennai - 78/66",
-                "Sunday - Chennai - 96/45",
-                "Monday - Chennai - 69/56"
-        };
-
-        List<String> forecastList = new ArrayList<>(
-                Arrays.asList(forecast_Array));
 
         mForecastAdapter = new ArrayAdapter<String>(
                 getActivity(),R.layout.list_item_forecast,
                 R.id.list_item_forecast_textviewd,
-                forecastList);
+                new ArrayList<String>());
 
         ListView displayList = (ListView) rootView.findViewById(R.id.listview_forecast);
         displayList.setAdapter(mForecastAdapter);
@@ -112,7 +101,6 @@ public class ForecastFragment extends Fragment {
                 startActivity(launchDetail);
             }
         });
-
         return rootView;
     }
 
@@ -122,16 +110,30 @@ public class ForecastFragment extends Fragment {
                 .setAction("Action", null).show();
     }
 
-    public void executeWeatherUpdate(String... location){
+    public void executeWeatherUpdate(){
+        String params[] = getDesiredLocation();
         FetchDataFromNetwork weatherTask = new FetchDataFromNetwork();
-        weatherTask.execute(getDesiredLocation());
+        weatherTask.execute(params[0],params[1],params[2]);
     }
 
-    public String getDesiredLocation() {
+    public String[] getDesiredLocation() {
+
+        String[] br = new String[5];
         SharedPreferences userpref = PreferenceManager
                 .getDefaultSharedPreferences(getActivity());
-        return userpref.getString(getString(R.string.pref_location_key),
+        br[0]=userpref.getString(getString(R.string.pref_location_key),
                 getString(R.string.pref_locationdefault));
+        br[1]=userpref.getString(getString(R.string.pref_units_key),
+                getString(R.string.pref_unitdefault));
+        br[2]=userpref.getString(getString(R.string.pref_numberdays_key),
+                getString(R.string.pref_numberdaysdefault));
+        return br;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        executeWeatherUpdate();
     }
 
     @Override
@@ -139,7 +141,7 @@ public class ForecastFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         showSnackBar();
-        executeWeatherUpdate(getDesiredLocation());
+
 
     }
 
@@ -147,7 +149,9 @@ public class ForecastFragment extends Fragment {
 
         private final String API = "4ca365c61eb4ee39b15e931654452e5b";
         public final String LOG_TAG = FetchDataFromNetwork.class.getSimpleName();
-
+        /**
+         * Prepare the date & time readable String
+         */
         private String getReadableDateString(long time){
             // Because the API returns a unix timestamp (measured in seconds),
             // it must be converted to milliseconds in order to be converted to valid date.
@@ -166,6 +170,12 @@ public class ForecastFragment extends Fragment {
             String highLowStr = roundedHigh + "/" + roundedLow;
             return highLowStr;
         }
+
+        public void getJulianTime() {
+
+
+        }
+
         private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
                 throws JSONException {
 
@@ -176,22 +186,28 @@ public class ForecastFragment extends Fragment {
             final String OWM_MAX = "max";
             final String OWM_MIN = "min";
             final String OWM_DESCRIPTION = "main";
+            String day;
 
             JSONObject weatherAccess = new JSONObject(forecastJsonStr);
             JSONArray weatherList = weatherAccess.getJSONArray(OWM_LIST);
 
+            Time dayTime = new Time();
+            dayTime.setToNow();
+            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(),
+                    dayTime.gmtoff);
+            dayTime = new Time();
+
             String resultStrs[] = new String[numDays];
-/*
-            Time time = new Time();
-            time.setToNow();*/
-
-
-            long time = System.currentTimeMillis();
-            String datetime = getReadableDateString(time);
             for(int i=0;i<weatherList.length();i++) {
 
                 JSONObject forecastDays = weatherList.getJSONObject(i);
                 JSONObject currentDayTemp = forecastDays.getJSONObject(OWM_TEMPERATURE);
+
+                long dateTime;
+                // Cheating to convert this to UTC time, which is what we want anyhow
+                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                day = getReadableDateString(dateTime);
+
 
                 double max = currentDayTemp.getDouble(OWM_MAX);
                 double min = currentDayTemp.getDouble(OWM_MIN);
@@ -200,7 +216,7 @@ public class ForecastFragment extends Fragment {
                 JSONObject currWeatherConditionsjson = forecastDays.getJSONArray(OWM_WEATHER).getJSONObject(0);
                 String weatherConditions = currWeatherConditionsjson.getString(OWM_DESCRIPTION);
 
-                String weatherForecast = maxMinTemp +" - " + weatherConditions;
+                String weatherForecast = day + " - "+ maxMinTemp +" - " + weatherConditions;
                 resultStrs[i]=weatherForecast;
             }
 
@@ -219,18 +235,15 @@ public class ForecastFragment extends Fragment {
                     .appendPath("daily")
                     .appendQueryParameter("q",params[0])
                     .appendQueryParameter("mode","json")
-                    .appendQueryParameter("units","metric")
-                    .appendQueryParameter("cnt","7")
+                    .appendQueryParameter("units",params[1])
+                    .appendQueryParameter("cnt",params[2])
                     .appendQueryParameter("appid",API);
 
             String api_call_string = builder.build().toString();
-
-            Log.i("appid",api_call_string);
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
             String inputStringJson=null;
 
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
             try {
                 // Create a new URL object
                 URL url = new URL(api_call_string);
@@ -276,7 +289,7 @@ public class ForecastFragment extends Fragment {
             }
 
             try {
-                return getWeatherDataFromJson(inputStringJson, 7);
+                return getWeatherDataFromJson(inputStringJson, Integer.parseInt(params[2]));
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
