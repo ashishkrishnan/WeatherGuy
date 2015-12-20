@@ -8,6 +8,7 @@ import android.os.Bundle;
  */
 public class SettingsActivity extends Activity {
 
+    public static final String pref_location ="location";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

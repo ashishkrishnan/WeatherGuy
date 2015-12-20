@@ -2,8 +2,10 @@ package org.askdn.weatherguy;
 
 import android.accounts.NetworkErrorException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -43,6 +45,7 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
 
     View rootView;
+    public String mUserLocation=null;
     public final String CLASS_ID = "ForecastFragment";
     public ArrayAdapter<String> mForecastAdapter;
     public ForecastFragment() {
@@ -66,10 +69,8 @@ public class ForecastFragment extends Fragment {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.forecast_refresh) {
-            Snackbar.make(rootView, "Updating the weather data", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
-            FetchDataFromNetwork weatherTask = new FetchDataFromNetwork();
-            weatherTask.execute();
+            showSnackBar();
+            executeWeatherUpdate();
             return true;
         }
         if (id == R.id.forecast_action_settings) {
@@ -111,10 +112,36 @@ public class ForecastFragment extends Fragment {
                 startActivity(launchDetail);
             }
         });
+
         return rootView;
     }
 
+    public void showSnackBar()
+    {
+        Snackbar.make(rootView, "Updating the weather data", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+    }
 
+    public void executeWeatherUpdate(String... location){
+        FetchDataFromNetwork weatherTask = new FetchDataFromNetwork();
+        weatherTask.execute(getDesiredLocation());
+    }
+
+    public String getDesiredLocation() {
+        SharedPreferences userpref = PreferenceManager
+                .getDefaultSharedPreferences(getActivity());
+        return userpref.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_locationdefault));
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        showSnackBar();
+        executeWeatherUpdate(getDesiredLocation());
+
+    }
 
     public class FetchDataFromNetwork extends AsyncTask<String, Void, String[]> {
 
@@ -190,7 +217,7 @@ public class ForecastFragment extends Fragment {
                     .appendPath("2.5")
                     .appendPath("forecast")
                     .appendPath("daily")
-                    .appendQueryParameter("q","Sahibganj")
+                    .appendQueryParameter("q",params[0])
                     .appendQueryParameter("mode","json")
                     .appendQueryParameter("units","metric")
                     .appendQueryParameter("cnt","7")
