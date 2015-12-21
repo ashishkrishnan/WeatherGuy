@@ -19,8 +19,7 @@ import android.widget.TextView;
  */
 public class DetailActivityFragment extends Fragment {
 
-    ShareActionProvider mShareActionProvider;
-    public final String LOG_TAG = DetailActivity.class.getSimpleName();
+
     private String mForecastStr;
 
     public DetailActivityFragment() {

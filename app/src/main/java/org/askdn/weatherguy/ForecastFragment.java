@@ -106,7 +106,7 @@ public class ForecastFragment extends Fragment {
 
     public void showSnackBar()
     {
-        Snackbar.make(rootView, "Updating the weather data", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView, getString(R.string.title_updateweather), Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
 
@@ -147,7 +147,14 @@ public class ForecastFragment extends Fragment {
 
     public class FetchDataFromNetwork extends AsyncTask<String, Void, String[]> {
 
-        private final String API = "4ca365c61eb4ee39b15e931654452e5b";
+        public final String URI_SCHEME = "http";
+        public final String URI_DOMAIN = "api.openweathermap.org";
+        public final String URI_DATA = "data";
+        public final String URI_VERSION = "2.5";
+        public final String URI_FORECAST = "forecast";
+        public final String URI_FORECAST_TYPE = "daily";
+        public final String URI_OUTPUT_TYPE = "json";
+        public final String URL_RESPONSE_TYPE = "GET";
         public final String LOG_TAG = FetchDataFromNetwork.class.getSimpleName();
         /**
          * Prepare the date & time readable String
@@ -186,6 +193,7 @@ public class ForecastFragment extends Fragment {
             final String OWM_MAX = "max";
             final String OWM_MIN = "min";
             final String OWM_DESCRIPTION = "main";
+
             String day;
 
             JSONObject weatherAccess = new JSONObject(forecastJsonStr);
@@ -227,17 +235,17 @@ public class ForecastFragment extends Fragment {
         protected String[] doInBackground(String... params) {
 
             Uri.Builder builder = new Uri.Builder();
-            builder.scheme("http")
-                    .authority("api.openweathermap.org")
-                    .appendPath("data")
-                    .appendPath("2.5")
-                    .appendPath("forecast")
-                    .appendPath("daily")
+            builder.scheme(URI_SCHEME)
+                    .authority(URI_DOMAIN)
+                    .appendPath(URI_DATA)
+                    .appendPath(URI_VERSION)
+                    .appendPath(URI_FORECAST)
+                    .appendPath(URI_FORECAST_TYPE)
                     .appendQueryParameter("q",params[0])
-                    .appendQueryParameter("mode","json")
+                    .appendQueryParameter("mode",URI_OUTPUT_TYPE)
                     .appendQueryParameter("units",params[1])
                     .appendQueryParameter("cnt",params[2])
-                    .appendQueryParameter("appid",API);
+                    .appendQueryParameter("appid",getString(R.string.appid));
 
             String api_call_string = builder.build().toString();
             String inputStringJson=null;
@@ -250,7 +258,7 @@ public class ForecastFragment extends Fragment {
                 // Open a URL connection
                 urlConnection = (HttpURLConnection) url.openConnection();
                 // Set the Connection Request Method
-                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestMethod(URL_RESPONSE_TYPE);
                 // Establish a connection
                 urlConnection.connect();
 
