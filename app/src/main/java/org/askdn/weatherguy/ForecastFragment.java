@@ -196,6 +196,7 @@ public class ForecastFragment extends Fragment {
 
             String day;
 
+            Log.i(LOG_TAG,forecastJsonStr);
             JSONObject weatherAccess = new JSONObject(forecastJsonStr);
             JSONArray weatherList = weatherAccess.getJSONArray(OWM_LIST);
 
