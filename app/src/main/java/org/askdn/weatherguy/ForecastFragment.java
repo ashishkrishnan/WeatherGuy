@@ -116,7 +116,7 @@ public class ForecastFragment extends Fragment {
 
     public void executeWeatherUpdate() {
         String params[] = getDesiredLocation();
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(), mForecastAdapter);
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         weatherTask.execute(params[0]);
     }
 
