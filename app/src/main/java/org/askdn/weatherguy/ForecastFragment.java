@@ -3,6 +3,7 @@ package org.askdn.weatherguy;
 import android.accounts.NetworkErrorException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -23,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.askdn.weatherguy.data.WeatherContract;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +48,7 @@ public class ForecastFragment extends Fragment {
 
     View rootView;
     public final String CLASS_ID = "ForecastFragment";
-    private ArrayAdapter<String> mForecastAdapter;
+    private ForecastAdapter mForecastAdapter;
 
     public ForecastFragment() {
     }
@@ -82,27 +84,28 @@ public class ForecastFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+
+
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mForecastAdapter = new ArrayAdapter<String>(
-                getActivity(), R.layout.list_item_forecast,
-                R.id.list_item_forecast_textviewd,
-                new ArrayList<String>());
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE+" ASC";
+        Uri weatherLocationwithUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting,System.currentTimeMillis());
+
+        Cursor cursor = getActivity().getContentResolver().query(weatherLocationwithUri,null,null,null,sortOrder);
+        mForecastAdapter = new ForecastAdapter(getActivity(),cursor,0);
+
 
         ListView displayList = (ListView) rootView.findViewById(R.id.listview_forecast);
         displayList.setAdapter(mForecastAdapter);
 
-        displayList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent launchDetail = new Intent(getActivity(), DetailActivity.class);
-                launchDetail.putExtra(CLASS_ID, mForecastAdapter.getItem(position));
-                startActivity(launchDetail);
-            }
-        });
+
         return rootView;
     }
 
