@@ -1,20 +1,23 @@
 package org.askdn.weatherguy;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import org.askdn.weatherguy.data.WeatherContract;
@@ -22,13 +25,12 @@ import org.askdn.weatherguy.data.WeatherContract;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ForecastFragment extends Fragment {
+public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
     View rootView;
-    public static int LOADER_ID = 0;
+    public static int FORECAST_LOADER = 0;
     public final String CLASS_ID = "ForecastFragment";
     private ForecastAdapter mForecastAdapter;
-
     public ForecastFragment() {
     }
 
@@ -38,6 +40,75 @@ public class ForecastFragment extends Fragment {
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
     }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        mForecastAdapter = new ForecastAdapter(getActivity(),null,0);
+        ListView displayList = (ListView) rootView.findViewById(R.id.listview_forecast);
+        displayList.setAdapter(mForecastAdapter);
+
+        displayList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                if(cursor!=null) {
+                    String location = Utility.getPreferredLocation(getActivity());
+                    Intent intent = new Intent(getActivity(),DetailActivity.class)
+                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(location,cursor.getLong(ForecastAdapter.COL_WEATHER_DATE)));
+                    startActivity(intent);
+                }
+            }
+        });
+        return rootView;
+    }
+
+    public void showSnackBar() {
+        Snackbar.make(rootView, getString(R.string.title_updateweather), Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+    }
+
+    public void executeWeatherUpdate() {
+        String location = Utility.getPreferredLocation(getActivity());
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
+        weatherTask.execute(location);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(FORECAST_LOADER,null,this);
+        showSnackBar();
+    }
+
+    public void onLocationChange() {
+        executeWeatherUpdate();
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE+" ASC";
+        Uri weatherLocationwithUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting,System.currentTimeMillis());
+        return new CursorLoader(getActivity(),weatherLocationwithUri,ForecastAdapter.FORECAST_COLUMNS,null,null,sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mForecastAdapter.swapCursor(null);
+    }
+
+
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -62,73 +133,6 @@ public class ForecastFragment extends Fragment {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-
-
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-        String locationSetting = Utility.getPreferredLocation(getActivity());
-        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE+" ASC";
-        Uri weatherLocationwithUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting,System.currentTimeMillis());
-
-        Cursor cursor = getActivity().getContentResolver().query(weatherLocationwithUri,null,null,null,sortOrder);
-        mForecastAdapter = new ForecastAdapter(getActivity(),cursor,0);
-
-
-        ListView displayList = (ListView) rootView.findViewById(R.id.listview_forecast);
-        displayList.setAdapter(mForecastAdapter);
-
-
-        return rootView;
-    }
-
-    public void showSnackBar() {
-        Snackbar.make(rootView, getString(R.string.title_updateweather), Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-    }
-
-    public void executeWeatherUpdate() {
-        String params[] = getDesiredLocation();
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
-        weatherTask.execute(params[0]);
-    }
-
-    public String[] getDesiredLocation() {
-
-        String[] br = new String[5];
-        SharedPreferences userpref = PreferenceManager
-                .getDefaultSharedPreferences(getActivity());
-        br[0] = userpref.getString(getString(R.string.pref_location_key),
-                getString(R.string.pref_locationdefault));
-        br[1] = userpref.getString(getString(R.string.pref_units_key),
-                getString(R.string.pref_unitdefault));
-        br[2] = userpref.getString(getString(R.string.pref_numberdays_key),
-                getString(R.string.pref_numberdaysdefault));
-        return br;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        executeWeatherUpdate();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        showSnackBar();
-
-
-    }
-
-
 
 }
 
