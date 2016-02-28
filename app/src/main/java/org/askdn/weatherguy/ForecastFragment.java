@@ -25,6 +25,7 @@ import org.askdn.weatherguy.data.WeatherContract;
 public class ForecastFragment extends Fragment {
 
     View rootView;
+    public static int LOADER_ID = 0;
     public final String CLASS_ID = "ForecastFragment";
     private ForecastAdapter mForecastAdapter;
 
