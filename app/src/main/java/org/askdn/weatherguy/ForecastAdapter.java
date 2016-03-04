@@ -9,6 +9,7 @@ import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.askdn.weatherguy.data.WeatherContract;
@@ -93,7 +94,27 @@ public class ForecastAdapter extends CursorAdapter {
         // our view is pretty simple here --- just a text view
         // we'll keep the UI functional with a simple (and slow!) binding.
 
-        TextView tv = (TextView) view;
-        tv.setText(convertCursorRowToUXFormat(cursor));
+        ImageView iconView = (ImageView) view.findViewById(R.id.list_item_icon);
+        int weatherID = cursor.getInt(COL_WEATHER_ID);
+
+        boolean isMetric = Utility.isMetric(mContext);
+
+        double high = cursor.getDouble(COL_WEATHER_MAX_TEMP);
+        double low  =cursor.getDouble(COL_WEATHER_MIN_TEMP);
+
+        TextView set_low = (TextView) view.findViewById(R.id.list_item_low_textview);
+        set_low.setText(Utility.formatTemperature(low,isMetric));
+
+        TextView set_high = (TextView) view.findViewById(R.id.list_item_high_textview);
+        set_high.setText(Utility.formatTemperature(high,isMetric));
+
+        long currentDateTime = cursor.getLong(COL_WEATHER_DATE);
+        TextView set_date = (TextView) view.findViewById(R.id.list_item_date_textview);
+        set_date.setText(Utility.formatDate(currentDateTime));
+
+        String weather_desc = cursor.getString(COL_WEATHER_DESC);
+        TextView set_desc = (TextView) view.findViewById(R.id.list_item_forecast_textview);
+        set_desc.setText(weather_desc);
+
     }
 }

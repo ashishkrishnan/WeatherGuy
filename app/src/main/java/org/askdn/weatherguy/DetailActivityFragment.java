@@ -28,7 +28,6 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     private String mForecast;
     View root;
     public static int DETAIL_LOADER = 1;
-    TextView tv;
     public DetailActivityFragment() {
         setHasOptionsMenu(true);
     }
@@ -69,7 +68,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
            if(!data.moveToFirst()==true) {return;}
             String dateString = Utility.formatDate(
                     data.getLong(ForecastAdapter.COL_WEATHER_DATE));
-            Log.e("MSG",dateString);
+            Log.e("DETAILS_ACTIVITY",dateString);
 
             String weatherDescription =
                     data.getString(ForecastAdapter.COL_WEATHER_DESC);

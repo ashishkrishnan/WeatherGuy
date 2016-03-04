@@ -112,7 +112,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
         inflater.inflate(R.menu.menu_forecast, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
