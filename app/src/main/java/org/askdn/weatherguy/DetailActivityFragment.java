@@ -1,23 +1,19 @@
 package org.askdn.weatherguy;
 
-import android.content.Intent;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import org.askdn.weatherguy.data.WeatherContract;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -40,6 +36,14 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         return shareIntent;
     }*/
 
+    private static final String[] FORECAST_COLUMNS = {
+            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+            WeatherContract.WeatherEntry.COLUMN_DATE,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -59,7 +63,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(),getActivity().getIntent().getData(),ForecastAdapter.FORECAST_COLUMNS,null, null,null);
+        return new CursorLoader(getActivity(),getActivity().getIntent().getData(),FORECAST_COLUMNS,null, null,null);
     }
 
     @Override
@@ -67,19 +71,19 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
            if(!data.moveToFirst()==true) {return;}
             String dateString = Utility.formatDate(
-                    data.getLong(ForecastAdapter.COL_WEATHER_DATE));
+                    data.getLong(ForecastFragment.COL_WEATHER_DATE));
             Log.e("DETAILS_ACTIVITY",dateString);
 
             String weatherDescription =
-                    data.getString(ForecastAdapter.COL_WEATHER_DESC);
+                    data.getString(ForecastFragment.COL_WEATHER_DESC);
 
             boolean isMetric = Utility.isMetric(getActivity());
 
             String high = Utility.formatTemperature(
-                    data.getDouble(ForecastAdapter.COL_WEATHER_MAX_TEMP), isMetric);
+                    data.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP), isMetric);
 
             String low = Utility.formatTemperature(
-                    data.getDouble(ForecastAdapter.COL_WEATHER_MIN_TEMP), isMetric);
+                    data.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP), isMetric);
 
             mForecast = String.format("%s - %s - %s/%s", dateString, weatherDescription, high, low);
 
